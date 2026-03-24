@@ -4,6 +4,14 @@ Ansible automation for installing and configuring a **JBoss EAP 8.1** standalone
 
 This repository uses an archive-based install, creates an instance under a separate base directory, stages and updates `standalone.xml`, validates the staged configuration with the embedded JBoss CLI, deploys the final config, and then restarts and health-checks the server.
 
+## Architecture
+
+![DeployJBoss8.1 architecture](docs/images/DeployJBoss8.1-architecture.png)
+
+The source diagram is also included here for editing/reference:
+
+- [`docs/images/DeployJBoss8.1-architecture.html`](docs/images/DeployJBoss8.1-architecture.html)
+
 ## What this project does
 
 - Installs JBoss EAP from a ZIP archive
@@ -39,6 +47,10 @@ DeployJBoss8.1/
 ├── Deploy.yml
 ├── ansible.cfg
 ├── hosts
+├── docs/
+│   └── images/
+│       ├── DeployJBoss8.1-architecture.png
+│       └── DeployJBoss8.1-architecture.html
 ├── vars/
 │   └── main.yml
 └── roles/
@@ -221,38 +233,18 @@ Shutdown behavior is guarded:
 
 Useful paths:
 
-- Startup wrapper log:
-  - `{{ startup_log }}`
-- Instance log directory:
-  - `{{ jboss.instance_home }}/log/`
-- Instance config directory:
-  - `{{ jboss.instance_home }}/configuration/`
-- Staging directory:
-  - `{{ staging_dir }}`
+```text
+{{ jboss.instance_home }}/log/server.log
+{{ jboss.instance_home }}/log/startup-ansible.log
+```
 
-If startup times out waiting for the management port:
+If startup succeeds but the management port does not come up:
 
-1. Check `{{ jboss.instance_home }}/log/server.log`
-2. Check `{{ startup_log }}`
-3. Confirm the management interface is really expected on `{{ jboss.management.host }}:{{ jboss.management.port }}`
-4. Confirm required realm property files exist under `{{ jboss.instance_home }}/configuration/`
-5. Confirm `jboss.java_home` points to a valid JDK
-
-## Typical first-run checklist
-
-- Put the JBoss EAP ZIP where the install role can read it
-- Set `jboss.java_home`
-- Set `jboss.install_home` and `jboss.instance_home`
-- Review bind addresses and management port
-- Review the inventory file
-- Run the playbook
-- Check the instance logs if the health check does not pass
+- verify the management bind address and port in `standalone.xml`
+- verify required realm property files exist under `{{ jboss.instance_home }}/configuration`
+- inspect `server.log` for boot failures
 
 ## Notes
 
-- This project currently targets **standalone mode**, not managed domain mode.
-- The repository is licensed under the Apache License 2.0.
-
-## License
-
-This project is licensed under the Apache License 2.0. See the `LICENSE` file for details.
+- Keep the JBoss EAP ZIP archive out of Git history unless you explicitly use Git LFS.
+- Add architecture images under `docs/images/` so the README renders correctly on GitHub.
